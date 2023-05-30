@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: log-streamer
+  name: log-streamer
+  namespace: nginx-ts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-streamer
+  template:
+    metadata:
+      labels:
+        app: log-streamer
+    spec:
+      containers:
+        - image: niemandx/log-streamer
+          imagePullPolicy: IfNotPresent
+          name: log-streamer

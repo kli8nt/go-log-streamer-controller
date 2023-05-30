@@ -2,25 +2,76 @@ package main
 
 import (
 	_ "kli8nt/log-streamer/pkg"
-	k8s "kli8nt/log-streamer/pkg"
+	client "kli8nt/log-streamer/pkg"
+
+	"k8s.io/klog/v2"
 )
 
 func main() {
 
-	client := k8s.Client{}
-	err := client.Init()
+	var pods map[string]func() = make(map[string]func())
 
-	if err != nil {
-		panic(err)
+	onAdd := func(obj interface{}) {
+		pod := client.ToPod(obj)
+		klog.Infof("POD CREATED: %s/%s", pod.Namespace, pod.Name)
+		appName := client.GetAppNameFromPod(pod)
+		client.Kafka.CreateTopic(appName, client.OnError)
 	}
 
-	pod := "nginx-ts-57b689c7fd-7xpcs"
+	onUpdate := func(oldObj interface{}, newObj interface{}) {
+		pod := client.ToPod(oldObj)
+		newPod := client.ToPod(newObj)
+		klog.Infof(
+			"POD UPDATED. %s/%s %s",
+			pod.Namespace, pod.Name, newPod.Status.Phase,
+		)
 
-	go client.Stream(pod, func(err error) {
-		panic(err)
-	})
+		if newPod.Status.Phase == "Running" {
+			if _, ok := pods[pod.Name]; ok {
+				return
+			} else {
+				start, stop := client.K8s.Stream(
+					pod,
+					client.OnError,
+				)
+				pods[pod.Name] = stop
+				go start()
+			}
+		}
+	}
 
+	onDelete := func(obj interface{}) {
+		pod := client.ToPod(obj)
+		klog.Infof("POD DELETED: %s/%s", pod.Namespace, pod.Name)
+		if _, ok := pods[pod.Name]; ok {
+			pods[pod.Name]()
+			delete(pods, pod.Name)
+			client.Kafka.DeleteTopic(pod.Name, client.OnError)
+		} else {
+			return
+		}
+	}
 
+	client.K8s.ListenForPods(
+		onAdd,
+		onUpdate,
+		onDelete,
+	)
+
+	// cb := func(msg []byte) {
+	// 	message := client.DecodeMessage(msg)
+
+	// 	if message.Container == "" {
+	// 		go client.K8s.Stream(
+	// 			message.Pod,
+	// 			onReceived,
+	// 			client.OnError,
+	// 		)
+	// 	} else {
+	// 	}
+	// }
+
+	// go q.Consume(cb)
 
 	// sleep forever
 	var forever chan struct{}

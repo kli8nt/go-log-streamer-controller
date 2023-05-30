@@ -4,11 +4,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func init() {
-	godotenv.Load()
 	log.Printf("Starting with WITH_KUBECONFIG set to: %s\n", os.Getenv("WITH_KUBECONFIG"))
 	log.Printf("Starting with NAMESPACE set to: %s\n", os.Getenv("NAMESPACE"))
 }

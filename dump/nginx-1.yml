@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-1-sv
+  name: nginx-1-sv
+  namespace: nginx-ts
+spec:
+  type: NodePort
+  ports:
+    - name: nginx-1-sv-port
+      port: 80
+      nodePort: 30068
+      targetPort: 80
+  selector:
+    app: nginx-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-1
+  name: nginx-1
+  namespace: nginx-ts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-1
+  template:
+    metadata:
+      labels:
+        app: nginx-1
+    spec:
+      containers:
+        - image: nginx
+          imagePullPolicy: IfNotPresent
+          name: nginx-1
+          ports:
+            - containerPort: 80
