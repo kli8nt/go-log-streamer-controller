@@ -58,21 +58,6 @@ func main() {
 		onDelete,
 	)
 
-	// cb := func(msg []byte) {
-	// 	message := client.DecodeMessage(msg)
-
-	// 	if message.Container == "" {
-	// 		go client.K8s.Stream(
-	// 			message.Pod,
-	// 			onReceived,
-	// 			client.OnError,
-	// 		)
-	// 	} else {
-	// 	}
-	// }
-
-	// go q.Consume(cb)
-
 	// sleep forever
 	var forever chan struct{}
 	<-forever
