@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	KF "github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"github.com/segmentio/kafka-go"
 )
 
 type KConfig struct {
@@ -23,13 +22,12 @@ type KConfig struct {
 type Kf struct {
 	config *KF.ConfigMap
 	topic string
-	dialer *kafka.Dialer
 	cleanups []func()
 }
 
 type KReader struct {
 	topic string
-	connection *kafka.Reader
+	// connection *kafka.Reader
 }
 
 type KWriter struct {
