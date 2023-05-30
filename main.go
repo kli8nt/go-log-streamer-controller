@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-
+	
 	var pods map[string]func() = make(map[string]func())
 
 	onAdd := func(obj interface{}) {
